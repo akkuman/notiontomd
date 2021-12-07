@@ -41,7 +41,6 @@ class NotionToMarkdown:
 
     def _parse_blocks(self, blocks, level=0):
         text = ''
-        print(json.dumps(blocks))
         for block in blocks:
             block_type = block.get('type')
             text += '  ' * level + getattr(self, f'handle_block_{block_type}')(block, level) + '\n\n'
