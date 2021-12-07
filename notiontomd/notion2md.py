@@ -136,3 +136,8 @@ class NotionToMarkdown:
         bookmark_field = block.get('bookmark', {})
         bookmark_url = bookmark_field.get('url', '')
         return f'- [{bookmark_url}]({bookmark_url})'
+    
+    def handle_block_quote(self, block, level=0):
+        '''处理quote类型的块'''
+        block_text = self._handle_text_block_base(block)
+        return f'> {block_text}'
