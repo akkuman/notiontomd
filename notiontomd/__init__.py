@@ -1,1 +1,1 @@
-from . import notion2md
+from .notion2md import *
