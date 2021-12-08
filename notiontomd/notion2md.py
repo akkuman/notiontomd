@@ -141,3 +141,10 @@ class NotionToMarkdown:
         '''处理quote类型的块'''
         block_text = self._handle_text_block_base(block)
         return f'> {block_text}'
+
+    def handle_block_to_do(self, block, level=0):
+        '''处理to-do类型的块'''
+        block_text = self._handle_text_block_base(block)
+        checked = block.get('to_do', {}).get('checked', False)
+        prefix = f'- [{"x" if checked else " "}] '
+        return f'{prefix}{block_text}'
