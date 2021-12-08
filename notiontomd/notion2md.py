@@ -196,3 +196,7 @@ class NotionToMarkdown:
             row = [item.get(field, '') for field in all_fields]
             block_text += " | ".join(row) + "\n"
         return block_text
+
+    def handle_block_divider(self, block, level=0):
+        '''处理divider类型块'''
+        return '------'
