@@ -148,3 +148,7 @@ class NotionToMarkdown:
         checked = block.get('to_do', {}).get('checked', False)
         prefix = f'- [{"x" if checked else " "}] '
         return f'{prefix}{block_text}'
+    
+    def handle_block_unsupported(self, block, level=0):
+        '''处理不支持的块（当前simpletable在api中未返回）'''
+        return ''
