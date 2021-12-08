@@ -1,5 +1,6 @@
 import json
 from notion_client import Client
+import markdown
 
 class NotSupportType(TypeError):
     pass
@@ -200,3 +201,32 @@ class NotionToMarkdown:
     def handle_block_divider(self, block, level=0):
         '''处理divider类型块'''
         return '------'
+
+    def handle_block_callout(self, block, level=0):
+        '''处理callout类型的块（处理为加粗字符）'''
+        callout_html = '''<div style="width: 100%; max-width: 850px; margin-top: 4px; margin-bottom: 4px;">
+    <div style="display: flex;">
+        <div style="display: flex; width: 100%; border-radius: 3px; background: rgb(241, 241, 239); padding: 16px 16px 16px 12px;">
+            <div>
+                <div style="user-select: none; transition: background 20ms ease-in 0s; display: flex; align-items: center; justify-content: center; height: 24px; width: 24px; border-radius: 3px; flex-shrink: 0;">
+                    {icon_html}
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; min-width: 0px; margin-left: 8px; width: 100%;">
+                <div style="max-width: 100%; width: 100%; white-space: pre-wrap; word-break: break-word; caret-color: rgb(55, 53, 47); padding-left: 2px; padding-right: 2px;">{block_html}</div>
+            </div>
+        </div>
+    </div>
+</div>'''
+        block_text = self._handle_text_block_base(block)
+        block_html = markdown.markdown(block_text)
+        icon_field = block.get('callout', {}).get('icon', {})
+        icon_type = icon_field.get('type', '')
+        icon_html = ''
+        if icon_type == 'emoji':
+            emoji = icon_field.get('emoji')
+            icon_html = f'''<div style="display: flex; align-items: center; justify-content: center; height: 24px; width: 24px;"><div style="height: 16.8px; width: 16.8px; font-size: 16.8px; line-height: 1.1; margin-left: 0px; color: black;">{emoji}</div></div>'''
+        elif icon_type == 'external':
+            icon_url = icon_field.get('external', {}).get('url', '')
+            icon_html = f'''<div><div style="width: 100%; height: 100%;"><img src="{icon_url}" style="display: block; object-fit: cover; border-radius: 3px; width: 16.8px; height: 16.8px; transition: opacity 100ms ease-out 0s;"></div></div>'''
+        return callout_html.format(icon_html=icon_html, block_html=block_html)
