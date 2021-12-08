@@ -152,3 +152,47 @@ class NotionToMarkdown:
     def handle_block_unsupported(self, block, level=0):
         '''处理不支持的块（当前simpletable在api中未返回）'''
         return ''
+    
+    def handle_block_child_database(self, block, level=0):
+        '''处理子database'''
+        database_id = block['id']
+        kwargs = {
+            'page_size': 100
+        }
+        table_list = []
+        title_field = '' # 用来存放第一列的列名
+        while True:
+            res = self.notion.databases.query(database_id, **kwargs)
+            results = res.get('results', [])
+            # 处理表格结果填入table_list
+            for item in results:
+                row_dict = {}
+                properties = item.get('properties', {})
+                for field_name, field_data in properties.items():
+                    if field_data.get('type') == 'title':
+                        title_field = field_name
+                    field_text = self._handle_text_block_base(field_data, has_text_field=False)
+                    row_dict[field_name] = field_text
+                table_list.append(row_dict)
+            # 如果有更多数据则进行翻页
+            if res.get('next_cursor'):
+                kwargs['start_cursor'] = res['next_cursor']
+            else:
+                break
+        # table_list转化为markdown表格
+        all_fields = set()
+        for item in table_list:
+            for k in item:
+                # 把标题列单独处理
+                if k == title_field:
+                    continue
+                all_fields.add(k)
+        all_fields = list(all_fields)
+        # 标题列插到第一列
+        all_fields.insert(0, title_field)
+        block_text = " | ".join(all_fields) + "\n"
+        block_text += " | ".join(['----'] * len(all_fields)) + "\n"
+        for item in table_list:
+            row = [item.get(field, '') for field in all_fields]
+            block_text += " | ".join(row) + "\n"
+        return block_text
