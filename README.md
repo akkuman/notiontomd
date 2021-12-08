@@ -12,7 +12,7 @@ Convert notion page content to markdown
 from notiontomd import NotionToMarkdown
 
 token = os.environ['token']
-database_id = os.environ['database_id']
+page_id = os.environ['page_id']
 
 print(NotionToMarkdown(token, page_id).parse())
 ```
