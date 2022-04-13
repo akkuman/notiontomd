@@ -100,9 +100,10 @@ class NotionToMarkdown:
         return f'- {block_text}'
 
     def handle_block_image(self, block, level=0):
-        image_field = block.get('image', {})
-        image_file_url = image_field.get('file', {}).get('url', '')
-        return f'![]({image_file_url})'
+        image_field = block['image']
+        image_type = image_field['type']
+        image_url = image_field[image_type]['url']
+        return f'![]({image_url})'
     
     def handle_block_code(self, block, level=0):
         '''处理code类型的块'''
