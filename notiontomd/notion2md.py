@@ -1,6 +1,7 @@
 import json
 from notion_client import Client
 import markdown
+import re
 
 class NotSupportType(TypeError):
     pass
@@ -50,7 +51,8 @@ class NotionToMarkdown:
         return text
     
     def parse(self) -> str:
-        blocks = self.get_blocks(self.page_id)
+        print("page id: ", self.page_id)    
+        blocks = self.get_blocks(self.page_id)    
         return self._parse_blocks(blocks)
     
     def _handle_element_base(self, element):
@@ -107,6 +109,7 @@ class NotionToMarkdown:
     
     def handle_block_code(self, block, level=0):
         '''处理code类型的块'''
+        print("block_code: ", block)
         block_text = self._handle_text_block_base(block)
         lang = block.get('code', {}).get('language', '')
         if level > 0:
@@ -117,6 +120,25 @@ class NotionToMarkdown:
             return code_text
         else:
             return f'```{lang}\n{block_text}\n```'
+
+    def handle_block_video(self, block, level=0):
+        '''处理video类型的块'''
+        video_field = block['video']
+        video_type = video_field['type']
+        video_url = video_field[video_type]['url']
+        print("video_type: ", video_type)
+        print("video_url: ", video_url)
+
+        #check string contains Youku
+        if "youtu.be" in video_url:
+            video_id = re.search(r"youtu\.be/([^?]+)", video_url).group(1)
+            converted_url = f"https://www.youtube.com/watch?v={video_id}"
+            return f'<div style="position: Relative; Padding-Bottom: 56.25%; Height: 0; Overflow: Hidden;"><Iframe Src="{converted_url.lower()}" Style="Position: Absolute; Top: 0; Left: 0; Width: 100%; Height: 100%; Border:0;" Frameborder="0" Allowfullscreen></Iframe></Div>'
+            # return f'<iframe width="560" height="315" src="{converted_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+        else:
+            return f'<video width="320" height="240" controls><source src="{video_url}" type="video/mp4"></video>'
+        #convert a string to all lower case
+        #converted_url = video_url.lower()
     
     def handle_block_heading_1(self, block, level=0):
         '''处理heading_1类型的块'''
