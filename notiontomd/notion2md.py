@@ -51,7 +51,6 @@ class NotionToMarkdown:
         return text
     
     def parse(self) -> str:
-        print("page id: ", self.page_id)    
         blocks = self.get_blocks(self.page_id)    
         return self._parse_blocks(blocks)
     
@@ -109,7 +108,6 @@ class NotionToMarkdown:
     
     def handle_block_code(self, block, level=0):
         '''处理code类型的块'''
-        print("block_code: ", block)
         block_text = self._handle_text_block_base(block)
         lang = block.get('code', {}).get('language', '')
         if level > 0:
@@ -126,8 +124,6 @@ class NotionToMarkdown:
         video_field = block['video']
         video_type = video_field['type']
         video_url = video_field[video_type]['url']
-        print("video_type: ", video_type)
-        print("video_url: ", video_url)
 
         #check string contains Youku
         if "youtu.be" in video_url:
