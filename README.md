@@ -36,4 +36,5 @@ Support block:
 - child_database
 - divider
 - callout
-- 
+- video (thanks for [@phuang07](https://github.com/phuang07))
+  
