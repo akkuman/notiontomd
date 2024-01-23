@@ -1,6 +1,7 @@
 import json
 from notion_client import Client
 import markdown
+import re
 
 class NotSupportType(TypeError):
     pass
@@ -50,7 +51,7 @@ class NotionToMarkdown:
         return text
     
     def parse(self) -> str:
-        blocks = self.get_blocks(self.page_id)
+        blocks = self.get_blocks(self.page_id)    
         return self._parse_blocks(blocks)
     
     def _handle_element_base(self, element):
@@ -117,6 +118,20 @@ class NotionToMarkdown:
             return code_text
         else:
             return f'```{lang}\n{block_text}\n```'
+
+    def handle_block_video(self, block, level=0):
+        '''处理video类型的块'''
+        video_field = block['video']
+        video_type = video_field['type']
+        video_url = video_field[video_type]['url']
+
+        #check string contains Youku
+        if "youtu.be" in video_url:
+            video_id = re.search(r"youtu\.be/([^?]+)", video_url).group(1)
+            converted_url = f"https://www.youtube.com/watch?v={video_id}"
+            return f'<div style="position: Relative; Padding-Bottom: 56.25%; Height: 0; Overflow: Hidden;"><Iframe Src="{converted_url.lower()}" Style="Position: Absolute; Top: 0; Left: 0; Width: 100%; Height: 100%; Border:0;" Frameborder="0" Allowfullscreen></Iframe></Div>'
+        else:
+            return f'<video width="320" height="240" controls><source src="{video_url}" type="video/mp4"></video>'
     
     def handle_block_heading_1(self, block, level=0):
         '''处理heading_1类型的块'''
